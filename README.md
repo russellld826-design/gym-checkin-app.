@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gym Check-in</title>
+<style>
+body{font-family:sans-serif;text-align:center;margin:0;padding:40px 20px;transition:background .3s}
+input{font-size:28px;padding:14px;width:80%;max-width:360px;text-align:center}
+button{font-size:24px;padding:14px 40px;margin-top:16px}
+#msg{font-size:30px;margin-top:30px}
+</style>
+</head>
+<body>
+<h1>Welcome 💪</h1>
+<p>Type your phone number</p>
+<input id="phone" type="tel" placeholder="09XXXXXXXXX">
+<br><button onclick="go()">Check in</button>
+<div id="msg"></div>
+<script>
+const URL_="PASTE_PROJECT_URL_HERE";
+const KEY="PASTE_ANON_KEY_HERE";
+async function go(){
+  const phone=document.getElementById("phone").value.trim();
+  const msg=document.getElementById("msg");
+  if(!phone)return;
+  try{
+    const r=await fetch(URL_+"/rest/v1/rpc/check_in",{
+      method:"POST",
+      headers:{"apikey":KEY,"Authorization":"Bearer "+KEY,"Content-Type":"application/json"},
+      body:JSON.stringify({p_phone:phone})
+    });
+    const d=await r.json();
+    if(d.status==="active"){
+      document.body.style.background="#c8f7c5";
+      msg.innerHTML="Welcome, "+d.name+"!<br>Active until "+d.expires_on;
+    }else if(d.status==="expired"){
+      document.body.style.background="#f7c5c5";
+      msg.innerHTML=d.name+", your membership expired on "+d.expires_on+".<br>Please talk to staff.";
+    }else{
+      document.body.style.background="#e0e0e0";
+      msg.innerHTML="Phone not found. Please ask staff.";
+    }
+  }catch(e){
+    msg.innerHTML="Connection problem. Ask staff.";
+  }
+  setTimeout(()=>{document.body.style.background="";msg.innerHTML="";document.getElementById("phone").value="";},5000);
+}
+</script>
+</body>
+</html>
